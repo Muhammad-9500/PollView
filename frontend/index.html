@@ -392,7 +392,9 @@
     const lgaPlaceholder = document.getElementById('lgaPlaceholder');
     const wardPlaceholder = document.getElementById('wardPlaceholder');
     const puPlaceholder = document.getElementById('puPlaceholder');
-    const apiBase = location.port === '5500' || location.port === '' ? 'http://localhost:5211/api/electoral' : '/api/electoral';
+    const isLocalFrontend = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    const apiOrigin = isLocalFrontend ? 'http://localhost:5211' : 'https://pollview.onrender.com';
+    const apiBase = `${apiOrigin}/api/electoral`;
     const candidateApiBase = apiBase.replace(/\/electoral$/, '');
     const backLabel = document.getElementById('backLabel');
     const nextLabel = document.getElementById('nextLabel');

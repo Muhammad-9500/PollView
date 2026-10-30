@@ -16,8 +16,12 @@ builder.Services.AddSingleton<AdminPasswordService>();
 builder.Services.AddSingleton<SentimentAnalysisService>();
 builder.Services.AddScoped<AdminAccountSeeder>();
 builder.Services.AddScoped<DemoResponseSeeder>();
+var configuredFrontendOrigins = builder.Configuration["Frontend:AllowedOrigins"];
+var frontendOrigins = string.IsNullOrWhiteSpace(configuredFrontendOrigins)
+    ? new[] { "http://localhost:5500", "http://127.0.0.1:5500", "https://localhost:7033", "http://localhost:5211", "https://pollview.pages.dev" }
+    : configuredFrontendOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 builder.Services.AddCors(options => options.AddPolicy("Frontend", policy =>
-    policy.WithOrigins("http://localhost:5500", "http://127.0.0.1:5500", "https://localhost:7033", "http://localhost:5211")
+    policy.WithOrigins(frontendOrigins)
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials()));
@@ -26,7 +30,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.Cookie.Name = "PollViews.Admin";
         options.Cookie.HttpOnly = true;
-        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SameSite = builder.Environment.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.None;
+        options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+            ? CookieSecurePolicy.SameAsRequest
+            : CookieSecurePolicy.Always;
         options.LoginPath = "/admin/login";
         options.Events.OnRedirectToLogin = context =>
         {
