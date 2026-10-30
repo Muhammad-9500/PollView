@@ -16,6 +16,11 @@ RUN dotnet publish backend/PollViews/PollViews.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
+# Npgsql may load Kerberos/GSSAPI support when opening PostgreSQL connections.
+RUN apt-get update \
+    && apt-get install --no-install-recommends --yes libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
 
